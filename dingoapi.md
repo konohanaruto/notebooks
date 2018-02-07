@@ -18,5 +18,3 @@ Dingo\Api\Provider\LaravelServiceProvider::class
 ```
 API_PREFIX=api
 ```
-
-END
