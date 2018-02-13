@@ -29,7 +29,7 @@ Dingo\Api\Provider\LaravelServiceProvider::class,
 php artisan vendor:publish --provider="Dingo\Api\Provider\LaravelServiceProvider"
 ```
 
-## 安装JWT
+## 安装[JWT](https://github.com/tymondesigns/jwt-auth)
 
 1. 编辑laravel的composer.json文件，在`require-dev`(尤其注意，和上面dingo不同)代码段加入一行
 ```
