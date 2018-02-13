@@ -52,13 +52,13 @@ Publishing complete.
 ```
 composer update -vvv
 ```
-3. 发布配置文件
-```
-php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
-```
-4. 在config/app.php的`providers`数组添加一行
+3. 在config/app.php的`providers`数组添加一行
 ```
 Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+```
+4. 发布配置文件
+```
+php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
 ```
 5. 生成一个jwt key
 ```
