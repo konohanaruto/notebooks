@@ -64,3 +64,87 @@ php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServicePro
 ```
 php artisan jwt:generate
 ```
+## 整合
+1. 配置auth guard, 因此，我们打开config/auth.php文件，确保如下两处更改
+```
+'defaults' => [
+    'guard' => 'api',
+    'passwords' => 'users',
+],
+
+...
+
+'guards' => [
+    'api' => [
+        'driver' => 'jwt',
+        'provider' => App\User::class # 使用app/User.php作为provider
+    ],
+],
+```
+
+2. 更新app/User.php文件，替换成如下内容
+```
+namespace App;
+
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable implements JWTSubject
+{
+    use Notifiable;
+
+    // Rest omitted for brevity
+
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+}
+```
+3. 修改一些配置，打开app/Providers/AppServiceProvider.php文件
+```
+use Illuminate\Support\Facades\Schema;
+// 省略...
+public function boot()
+{
+    // 添加如下行
+    Schema::defaultStringLength(191);
+}
+```
+4. 创建用户表
+```
+php artisan migrate
+```
+5. 使用thinker命令创建用户，确保你laravel的.env文件已正确的配置了数据库信息
+```
+php artisan thinker
+// 粘贴如下内容
+$user = new User;
+$user->email = 'admin@test.com';
+$user->name = 'admin';
+$user->password = Hash::make('123456');
+$user->save();
+```
+6. 编辑.env文件，设置dingo相关
+```
+API_PREFIX=api
+API_VERSION=v2
+API_SUBTYPE=myapp
+API_STANDARDS_TREE=vnd
+```
