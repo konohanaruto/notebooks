@@ -58,7 +58,7 @@ php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServicePro
 ```
 4. 在config/app.php的`providers`数组添加一行
 ```
-Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class,
+Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
 ```
 5. 生成一个jwt key
 ```
