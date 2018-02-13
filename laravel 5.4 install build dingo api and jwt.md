@@ -18,16 +18,23 @@
 ```
 composer update -vvv
 ```
-3. 在config/app.php的`providers`数组添加一行
+
+3. 发布相应的配置文件
+```
+php artisan vendor:publish --provider="Dingo\Api\Provider\LaravelServiceProvider"
+```
+
+4. 在config/app.php的`providers`数组添加一行
 
 ```
 Dingo\Api\Provider\LaravelServiceProvider::class,
 ```
+将会输出  
+```
+Copied File [\vendor\dingo\api\config\api.php] To [\config\api.php]  
+Publishing complete.
+```
 
-4. 发布相应的配置文件
-```
-php artisan vendor:publish --provider="Dingo\Api\Provider\LaravelServiceProvider"
-```
 
 ## 安装[JWT](https://github.com/tymondesigns/jwt-auth)
 
