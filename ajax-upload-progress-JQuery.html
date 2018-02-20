@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ajax upload and download progress bar</title>
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <style>
+        ul, li, img, p {
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            margin: 0 auto;
+            width: 500px;
+            border: 1px solid #F3F3F3;
+            padding: 10px;
+        }
+
+        .tool-bar {
+            overflow: hidden;
+        }
+
+        .add-file-btn {
+            width: 200px;
+            height: 30px;
+            line-height: 30px;
+            float: left;
+        }
+
+        .add-file-btn button {
+            display: block;
+            width: inherit;
+        }
+
+        .upload-btn {
+            width: 100px;
+            height: 30px;
+            line-height: 30px;
+            float: right;
+        }
+
+        .upload-btn button {
+            display: block;
+            width: inherit;
+        }
+
+        .file-number-panel {
+            text-align: center;
+            padding: 10px 0 10px 0;
+        }
+
+        .file-count {
+            color: #448942;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        #file-form {
+            display: none;
+        }
+
+        .image-list {
+            overflow: hidden;
+        }
+
+        .image-list li {
+            position: relative;
+            list-style: none;
+            float: left;
+            margin-right: 7px;
+            margin-top: 10px;
+            width: 160px;
+            border-top: 1px solid red;
+        }
+
+        .image-list li .preview-img{
+            position: relative;
+            height: 160px;
+        }
+
+        .image-list li:nth-child(3n) {
+            margin-right: 0;
+        }
+
+        .image-list li .preview-img img {
+            position: absolute;
+            width: 160px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .image-list .progress {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 20px;
+            width: 0;
+            background: #2ca02c;
+            text-align: center;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="tool-bar">
+        <div class="add-file-btn">
+            <button type="button">点击添加文件</button>
+        </div>
+        <div class="upload-btn">
+            <button type="button">上传</button>
+        </div>
+    </div>
+    <div class="file-number-panel">
+        已添加了<span class="file-count">0</span>个文件
+    </div>
+    <div class="display-box">
+        <ul class="image-list">
+            <!--<li>-->
+                <!--<p class="preview-img"><img src="demo.jpg" alt=""></p>-->
+                <!--<p class="progress"></p>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<p class="preview-img"><img src="demo.jpg" alt=""></p>-->
+                <!--<p class="progress"></p>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<p class="preview-img"><img src="demo.jpg" alt=""></p>-->
+                <!--<p class="progress"></p>-->
+            <!--</li>-->
+        </ul>
+    </div>
+
+    <form id="file-form" method="post" enctype="multipart/form-data">
+        <input name="file" type="file" multiple="" />
+    </form>
+</div>
+</body>
+</html>
+<script>
+    /**
+     * @notice 为了测试目的，通常会添加比较大的图片，请确保php.ini已作了正确配置，否则$_FILE可能出现为空的情况
+     * file_uploads = On
+     * post_max_size = 100M
+     * upload_max_filesize = 100M
+     *
+     * @ 测试图片下载地址(大图)
+     * @see https://commons.wikimedia.org/w/index.php?title=Category:Large_images#mw-category-media
+     */
+    $(function () {
+        var fileNumber = 0;
+        var fileObject = [];
+
+        $('.add-file-btn button').on('click', function () {
+            $('#file-form input[type="file"]').trigger('click');
+        });
+
+        $('#file-form input[type="file"]').on('change', function (e) {
+            var currentAddFileNumber = e.target.files.length;
+            fileNumber += currentAddFileNumber;
+
+            for (var i = 0; i < currentAddFileNumber; i++) {
+                //fileObject.append('file['+i+']', e.target.files[i]);
+                fileObject.push(e.target.files[i]);
+            }
+
+            // console.log(fileObject);
+            $('.file-count').html(fileNumber);
+            // 重置file的值，便于下次能选择相同的文件
+            $(this).val('');
+        });
+
+        $('.upload-btn button').on('click', function () {
+            //console.log(fileObject);
+
+            /**
+             * @see https://stackoverflow.com/questions/17066875/how-to-inspect-formdata
+             */
+            var progressData = [];
+
+            /**
+             * 循环中嵌套setTimeOut或ajax调用等等，永远引用的是最后的i的值，可以参考JavaScript相关知识
+             * 解决方案
+             * https://dzone.com/articles/why-does-javascript-loop-only-use-last-value
+             * 这里直接使用了let
+             */
+            for (let j = 0; j < fileObject.length; j++) {
+                var formDataObject = new FormData();
+                formDataObject.append('file', fileObject[j]);
+
+                // 使用html5 file render api及时显示图片
+                if (fileObject[j].type.match(/image.*/)) {
+                    var reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        var img = new Image();
+                        img.src = reader.result;
+                        var liDOM = '<li><p class="preview-img"></p><p class="progress"></p></li>';
+                        $(liDOM).appendTo('.image-list');
+                        $('.image-list .preview-img').append(img);
+                    };
+
+                    reader.readAsDataURL(fileObject[j]);
+                } else {
+                    // 不支持的文件格式
+                }
+
+                $.ajax({
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = Math.round((evt.loaded / evt.total) * 100);
+
+                                if (! progressData[j]) {
+                                    progressData[j] = [];
+                                }
+
+                                progressData[j].push(percentComplete);
+                            }
+                        }, false);
+
+                        return xhr;
+                    },
+                    url: 'upload.php',
+                    type: "POST",
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    data: formDataObject,
+                    success: function (data) {
+                        console.log(progressData[j]);
+                        var k = 0;
+                        var timer = setInterval(function () {
+                            if (k < progressData[j].length) {
+                                var progressPercent = progressData[j][k] + '%';
+                                var progressBar = $('.image-list').find('.progress');
+                                progressBar.css('width', progressPercent);
+                                progressBar.html(progressPercent);
+                                ++k;
+                            } else {
+                                clearInterval(timer);
+                            }
+                        }, 1000);
+                    }
+                });
+            }
+        });
+    })
