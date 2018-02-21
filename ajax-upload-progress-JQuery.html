@@ -72,6 +72,7 @@
             margin-top: 10px;
             width: 160px;
             border-top: 1px solid red;
+            overflow: hidden;
         }
 
         .image-list li .preview-img{
@@ -121,14 +122,6 @@
                 <!--<p class="preview-img"><img src="demo.jpg" alt=""></p>-->
                 <!--<p class="progress"></p>-->
             <!--</li>-->
-            <!--<li>-->
-                <!--<p class="preview-img"><img src="demo.jpg" alt=""></p>-->
-                <!--<p class="progress"></p>-->
-            <!--</li>-->
-            <!--<li>-->
-                <!--<p class="preview-img"><img src="demo.jpg" alt=""></p>-->
-                <!--<p class="progress"></p>-->
-            <!--</li>-->
         </ul>
     </div>
 
@@ -151,6 +144,7 @@
     $(function () {
         var fileNumber = 0;
         var fileObject = [];
+        var uploadedFileNumber = 0;
 
         $('.add-file-btn button').on('click', function () {
             $('#file-form input[type="file"]').trigger('click');
@@ -161,19 +155,15 @@
             fileNumber += currentAddFileNumber;
 
             for (var i = 0; i < currentAddFileNumber; i++) {
-                //fileObject.append('file['+i+']', e.target.files[i]);
                 fileObject.push(e.target.files[i]);
             }
 
-            // console.log(fileObject);
             $('.file-count').html(fileNumber);
             // 重置file的值，便于下次能选择相同的文件
             $(this).val('');
         });
 
         $('.upload-btn button').on('click', function () {
-            //console.log(fileObject);
-
             /**
              * @see https://stackoverflow.com/questions/17066875/how-to-inspect-formdata
              */
@@ -191,14 +181,14 @@
 
                 // 使用html5 file render api及时显示图片
                 if (fileObject[j].type.match(/image.*/)) {
-                    var reader = new FileReader();
+                    let reader = new FileReader();
+                    var liDOM = '<li><p class="preview-img"></p><p class="progress"></p></li>';
+                    $(liDOM).appendTo('.image-list');
 
                     reader.onload = function (e) {
                         var img = new Image();
                         img.src = reader.result;
-                        var liDOM = '<li><p class="preview-img"></p><p class="progress"></p></li>';
-                        $(liDOM).appendTo('.image-list');
-                        $('.image-list .preview-img').append(img);
+                        $('.image-list li:eq('+(uploadedFileNumber + j)+') .preview-img').append(img);
                     };
 
                     reader.readAsDataURL(fileObject[j]);
@@ -230,18 +220,25 @@
                     cache: false,
                     processData: false,
                     data: formDataObject,
+                    crossDomain: true,
                     success: function (data) {
-                        console.log(progressData[j]);
                         var k = 0;
                         var timer = setInterval(function () {
                             if (k < progressData[j].length) {
                                 var progressPercent = progressData[j][k] + '%';
-                                var progressBar = $('.image-list').find('.progress');
+                                var progressBar = $('.image-list li:eq('+(uploadedFileNumber + j)+')').find('.progress');
                                 progressBar.css('width', progressPercent);
                                 progressBar.html(progressPercent);
                                 ++k;
                             } else {
                                 clearInterval(timer);
+                                // reset
+                                if (j == fileObject.length - 1) {
+                                    fileNumber = 0;
+                                    $('.file-count').html(fileNumber);
+                                    uploadedFileNumber += fileObject.length;
+                                    fileObject = [];
+                                }
                             }
                         }, 1000);
                     }
@@ -249,3 +246,10 @@
             }
         });
     })
+</script>
+
+<!-- upload.php code -->
+<!--
+echo json_encode(array());
+-->
+<!-- upload.php code end -->
