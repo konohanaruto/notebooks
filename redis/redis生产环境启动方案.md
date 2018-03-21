@@ -11,10 +11,12 @@
 5. 修改redis配置文件（默认在根目录下，redis.conf），拷贝到/etc/redis目录中，修改名称为6379.conf
 6. 修改redis.conf中的部分配置为生产环境
 
-    daemonize	yes							让redis以daemon进程运行
-    pidfile		/var/run/redis_6379.pid 	设置redis的pid文件位置
-    port		6379						设置redis的监听端口号
-    dir 		/var/redis/6379				设置持久化文件的存储位置
+```
+daemonize	yes							让redis以daemon进程运行
+pidfile		/var/run/redis_6379.pid 	设置redis的pid文件位置
+port		6379						设置redis的监听端口号
+dir 		/var/redis/6379				设置持久化文件的存储位置
+```
 
 7. 启动redis，执行cd /etc/init.d, chmod 777 redis_6379，./redis_6379 start
 
