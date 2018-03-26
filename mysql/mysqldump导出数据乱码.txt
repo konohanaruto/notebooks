@@ -1,0 +1,22 @@
+先来查看表的结构：
+Create Table: CREATE TABLE `movies` (
+  `id` varchar(11) NOT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `category` varchar(255) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `region` varchar(255) DEFAULT NULL,
+  `release_year` varchar(255) NOT NULL DEFAULT '',
+  `url` text,
+  `img` varchar(255) DEFAULT NULL,
+  `other` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+可见是utf8格式，但是当我使用如下命令导出，发现文件中文乱码(-r参数通常在msdos下使用，防止\n被转换成\r\n)：
+
+mysqldump -h127.0.0.1 -uroot -psc19931129 -r ~/movies-dump.sql test movies
+
+解决方案如下：
+
+mysqldump -h127.0.0.1 -uroot -psc19931129 --default-character-set=latin1 -r ~/movies-dump.sql test movies
