@@ -1,0 +1,24 @@
+最近重装了mysql，发现无法使用localhost连接，但是使用127.0.0.1却可以连接，使用localhost连接报错如下：
+
+Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock'
+
+分析原因：localhost连接是mysql使用socket进行连接，而127.0.0.1是使用tcp/ip协议连接，于是我通过127.0.0.1连接后执行如下命令
+
+mysql> show variables like '%socket%';
++-----------------------------------------+-----------------+
+| Variable_name                           | Value           |
++-----------------------------------------+-----------------+
+| performance_schema_max_socket_classes   | 10              |
+| performance_schema_max_socket_instances | 322             |
+| socket                                  | /tmp/mysql.sock |
++-----------------------------------------+-----------------+
+
+发现socket地址是/tmp/mysql.sock，而报错指出是/var/lib/mysql/mysql.sock，所以我在~/.my.cnf下更新了配置：
+
+[mysql]
+host=localhost
+user=root
+password=xxxxxx
+socket=/tmp/mysql.sock
+
+现在可以正常连接使用了。
